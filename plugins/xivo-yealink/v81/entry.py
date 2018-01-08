@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright (C) 2013-2016 Avencall
+# Copyright 2013-2017 The Wazo Authors  (see the AUTHORS file)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ MODEL_VERSIONS = {
     u'T46S': u'66.81.0.110',
     u'T48G': u'35.81.0.110',
     u'T48S': u'66.81.0.110',
+    u'CP860': u'37.81.0.10',
+    u'W52P': u'25.81.0.10',
 }
 
 COMMON_FILES = [
@@ -49,7 +51,7 @@ COMMON_FILES = [
     ('y000000000045.cfg', u'T27-45.81.0.110.rom', 'model.tpl'),
     ('y000000000069.cfg', u'T27G-69.81.0.110.rom', 'model.tpl'),
     ('y000000000046.cfg', u'T29-46.81.0.110.rom', 'model.tpl'),
-    ('y000000000052.cfg', u'T21P_E2-52.81.0.70.rom', 'model.tpl'),
+    ('y000000000052.cfg', u'T21P_E2-52.81.0.110.rom', 'model.tpl'),
     ('y000000000053.cfg', u'T19P_E2-53.81.0.110.rom', 'model.tpl'),
     ('y000000000054.cfg', u'T40-54.81.0.110.rom', 'model.tpl'),
     ('y000000000076.cfg', u'T40G-76.81.0.110.rom', 'model.tpl'),
@@ -57,8 +59,12 @@ COMMON_FILES = [
     ('y000000000067.cfg', u'T42S-67.81.0.110.rom', 'model.tpl'),
     ('y000000000066.cfg', u'T46S-66.81.0.110.rom', 'model.tpl'),
     ('y000000000065.cfg', u'T48S-65.81.0.110.rom', 'model.tpl'),
+    ('y000000000037.cfg', u'CP860-37.81.0.10.rom', 'model.tpl'),
 ]
 
+COMMON_FILES_DECT = [
+    ('y000000000025.cfg', u'Base-W52P-W56P-25.81.0.10.rom', u'W56H-61.81.0.30.rom', 'W52P.tpl'),
+]
 
 class YealinkPlugin(common_globals['BaseYealinkPlugin']):
     IS_PLUGIN = True
@@ -68,3 +74,13 @@ class YealinkPlugin(common_globals['BaseYealinkPlugin']):
     # Yealink plugin specific stuff
 
     _COMMON_FILES = COMMON_FILES
+    
+    def configure_common(self, raw_config):
+        super(YealinkPlugin, self).configure_common(raw_config)
+        for filename, fw_filename, fw_handset_filename, tpl_filename in COMMON_FILES_DECT:
+            tpl = self._tpl_helper.get_template('common/%s' % tpl_filename)
+            dst = os.path.join(self._tftpboot_dir, filename)
+            raw_config[u'XX_fw_filename'] = fw_filename
+            raw_config[u'XX_fw_handset_filename'] = fw_handset_filename
+            self._tpl_helper.dump(tpl, raw_config, dst, self._ENCODING)
+
